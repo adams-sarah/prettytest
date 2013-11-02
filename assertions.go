@@ -5,6 +5,7 @@ import (
 	"launchpad.net/gocheck"
 	"os"
 	"reflect"
+	"runtime"
 )
 
 type Assertion struct {
@@ -21,6 +22,7 @@ func (assertion *Assertion) fail() {
 	assertion.Passed = false
 	assertion.testFunc.Status = STATUS_FAIL
 	logError(&Error{assertion.suite, assertion.testFunc, assertion})
+	runtime.Goexit() // Exit test to prevent panic, move on to next test
 }
 
 // Check wraps gocheck.Check method.
