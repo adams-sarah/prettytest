@@ -81,6 +81,7 @@ import (
 	"runtime"
 	"strings"
 	"testing"
+	"sync"
 )
 
 const (
@@ -307,13 +308,22 @@ func run(t *testing.T, formatter Formatter, suites ...tCatcher) {
 
 		for i := 0; i < iType.NumMethod(); i++ {
 			method := iType.Method(i)
+
 			if ok, _ := regexp.MatchString(*testToRun, method.Name); ok {
 				if ok, _ := regexp.MatchString(formatter.AllowedMethodsPattern(), method.Name); ok {
 					if before.IsValid() {
 						before.Call([]reflect.Value{reflect.ValueOf(s)})
 					}
 
-					method.Func.Call([]reflect.Value{reflect.ValueOf(s)})
+					// Wrap in goroutine in case of a FailFast(), which will exit the goroutine
+					var waiter sync.WaitGroup
+					waiter.Add(1)
+					go func() {
+						defer waiter.Done()
+						method.Func.Call([]reflect.Value{reflect.ValueOf(s)})
+					}()
+					waiter.Wait()
+
 
 					if after.IsValid() {
 						after.Call([]reflect.Value{reflect.ValueOf(s)})
@@ -352,6 +362,7 @@ func run(t *testing.T, formatter Formatter, suites ...tCatcher) {
 			}
 
 		}
+
 
 		if afterAll.IsValid() {
 			afterAll.Call([]reflect.Value{reflect.ValueOf(s)})

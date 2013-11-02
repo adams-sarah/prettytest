@@ -55,14 +55,14 @@ func (s *Suite) Check(obtained interface{}, checker gocheck.Checker, args ...int
 
 // FailFast exits the test if the given assertion is false
 func (s *Suite) FailFast(result *Assertion, messages ...string) *Assertion {
+	assertion := s.setup(fmt.Sprintf("Assertion failed fast"), messages)
 	if !result.Passed {
 		result.testFunc.Status = STATUS_FAIL
-		result.ErrorMessage = fmt.Sprint(messages)
-		result.fail()
+		assertion.fail()
 		runtime.Goexit()
 	}
 
-	return result
+	return assertion
 }
 
 // Not asserts the given assertion is false.

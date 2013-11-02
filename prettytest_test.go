@@ -30,6 +30,7 @@ import (
 	"launchpad.net/gocheck"
 	"os"
 	"testing"
+	"errors"
 )
 
 var state, beforeState, afterState, beforeAllState, afterAllState int
@@ -45,6 +46,15 @@ func (suite *testSuite) TestFailMessage() {
 	suite.True(false)
 	suite.True(false, "This should fail with a custom error message")
 	suite.MustFail()
+}
+
+func (suite *testSuite) TestFailFast() {
+	err := errors.New("Error message here.")
+	suite.FailFast(suite.Nil(err))
+	
+	// This should not be called
+	var intSlice []int64
+	_ = intSlice[1]
 }
 
 func (suite *testSuite) TestTrue() {
