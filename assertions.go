@@ -5,7 +5,6 @@ import (
 	"launchpad.net/gocheck"
 	"os"
 	"reflect"
-	"runtime"
 )
 
 type Assertion struct {
@@ -22,7 +21,6 @@ func (assertion *Assertion) fail() {
 	assertion.Passed = false
 	assertion.testFunc.Status = STATUS_FAIL
 	logError(&Error{assertion.suite, assertion.testFunc, assertion})
-	runtime.Goexit() // Exit test to prevent panic, move on to next test
 }
 
 // Check wraps gocheck.Check method.
@@ -52,6 +50,16 @@ func (s *Suite) Check(obtained interface{}, checker gocheck.Checker, args ...int
 		assertion.Passed = true
 	}
 	return assertion
+}
+
+// FailFast exits the test if the given assertion is false
+func (s *Suite) FailFast(result *Assertion, messages ...string) *Assertion {
+	if !result.Passed {
+		result.testFunc.Status = STATUS_FAIL
+		result.ErrorMessage = fmt.Sprint(messages)
+		result.fail()
+		runtime.Goexit()
+	}
 }
 
 // Not asserts the given assertion is false.
