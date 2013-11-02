@@ -5,6 +5,7 @@ import (
 	"launchpad.net/gocheck"
 	"os"
 	"reflect"
+	"runtime"
 )
 
 type Assertion struct {
@@ -60,6 +61,8 @@ func (s *Suite) FailFast(result *Assertion, messages ...string) *Assertion {
 		result.fail()
 		runtime.Goexit()
 	}
+
+	return result
 }
 
 // Not asserts the given assertion is false.
