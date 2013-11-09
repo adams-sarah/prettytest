@@ -36,10 +36,6 @@ func (t *testSuite) TestNot() {
 	t.Not(t.Path("foo"))
 }
 
-func (t *testSuite) TestGoCheck() {
-	t.Check("foo", gocheck.Equals, "foo")
-}
-
 // Failing tests
 
 func (t *testSuite) TestMustFail() {

@@ -27,7 +27,6 @@ package prettytest
 
 import (
 	"io/ioutil"
-	"launchpad.net/gocheck"
 	"os"
 	"testing"
 	"errors"
@@ -49,6 +48,8 @@ func (suite *testSuite) TestFailMessage() {
 }
 
 func (suite *testSuite) TestFailFast() {
+	suite.MustFail()
+	
 	err := errors.New("Error message here.")
 	suite.FailFast(suite.Nil(err))
 	
@@ -79,13 +80,6 @@ func (suite *testSuite) TestFalse() {
 
 func (suite *testSuite) TestEqual() {
 	suite.Equal("foo", "foo")
-}
-
-func (suite *testSuite) TestCheck() {
-	suite.Check("42", gocheck.Equals, "42")
-	suite.Check("42", gocheck.Equals, "43")
-	suite.Check("notnil", gocheck.IsNil, "custom error")
-	suite.MustFail()
 }
 
 func (suite *testSuite) TestNil() {
