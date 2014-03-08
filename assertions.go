@@ -58,7 +58,9 @@ func (s *Suite) False(value bool, messages ...string) *Assertion {
 
 // Equal asserts that the expected value equals the actual value.
 func (s *Suite) Equal(exp, act interface{}, messages ...string) *Assertion {
-	assertion := s.setup(fmt.Sprintf("Expected %v to be equal to %v", act, exp), messages)
+	actType := reflect.TypeOf(act)
+	expType := reflect.TypeOf(exp)
+	assertion := s.setup(fmt.Sprintf("Expected %v[%s] to be equal to %v[%s]", act, actType, exp, expType), messages)
 	if exp != act {
 		assertion.fail()
 	}
@@ -89,8 +91,10 @@ func (s *Suite) Nil(value interface{}, messages ...string) *Assertion {
 	if value == nil {
 		return assertion
 	}
+	val := reflect.ValueOf(value)
+	val.Kind()
 	switch v := reflect.ValueOf(value); v.Kind() {
-	case reflect.Chan, reflect.Func, reflect.Interface, reflect.Map, reflect.Ptr, reflect.Slice:
+	case reflect.Chan, reflect.Func, reflect.Interface, reflect.Map, reflect.Ptr, reflect.Slice, reflect.UnsafePointer:
 		if !v.IsNil() {
 			assertion.fail()
 		}

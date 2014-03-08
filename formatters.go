@@ -6,6 +6,28 @@ import (
 	"strings"
 )
 
+const formatTag = "\t%s\t"
+
+var (
+	labelFAIL         = red("F")
+	labelMUSTFAIL     = green("EF")
+	labelPASS         = green("OK")
+	labelPENDING      = yellow("PE")
+	labelNOASSERTIONS = yellow("NA")
+)
+
+func green(text string) string {
+	return "\033[32m" + text + "\033[0m"
+}
+
+func red(text string) string {
+	return "\033[31m" + text + "\033[0m"
+}
+
+func yellow(text string) string {
+	return "\033[33m" + text + "\033[0m"
+}
+
 type FinalReport struct {
 	Passed, Failed, ExpectedFailures, Pending, NoAssertions int
 }
@@ -43,7 +65,7 @@ Legend:
 type TDDFormatter struct{}
 
 func (formatter *TDDFormatter) PrintSuiteInfo(suite *Suite) {
-	fmt.Printf("\nPackage: %s Suite: %s\n", suite.Package, suite.Name)
+	fmt.Printf("\n%s.%s:\n\n", suite.Package, suite.Name)
 }
 
 func (formatter *TDDFormatter) PrintStatus(testFunc *TestFunc) {
