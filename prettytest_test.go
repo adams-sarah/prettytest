@@ -16,7 +16,7 @@ included in all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
 EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
 MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
-NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+NONINFRINGEMENs. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
 LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
@@ -29,7 +29,6 @@ import (
 	"io/ioutil"
 	"os"
 	"testing"
-	"errors"
 )
 
 var state, beforeState, afterState, beforeAllState, afterAllState int
@@ -39,96 +38,144 @@ type testSuite struct{ Suite }
 type beforeAfterSuite struct{ Suite }
 type bddFormatterSuite struct{ Suite }
 
-func (suite *testSuite) TestNoAssertions() {}
-
-func (suite *testSuite) TestFailMessage() {
-	suite.True(false)
-	suite.True(false, "This should fail with a custom error message")
-	suite.MustFail()
+type mockSuite struct {
+	Suite
+	Ok bool
 }
 
-func (suite *testSuite) TestFailFast() {
-	suite.MustFail()
-	
-	err := errors.New("Error message here.")
-	suite.FailFast(suite.Nil(err))
-	
-	// This should not be called
-	var intSlice []int64
-	_ = intSlice[1]
+func NewMockSuite() *mockSuite {
+	var t *testing.T
+
+	s := &mockSuite{
+		Ok: true,
+	}
+
+	s.setT(t)
+	s.init()
+
+	return s
 }
 
-func (suite *testSuite) TestTrue() {
-	suite.True(true)
-	suite.Not(suite.True(false))
+func (s *mockSuite) setup() {
+	return
 }
 
-func (suite *testSuite) TestError() {
-	suite.Error("This test should be marked as failed")
-	suite.MustFail()
+type mockT struct{}
+
+func (t *mockT) Fail() {
+	return
 }
 
-func (suite *testSuite) TestNot() {
-	suite.Not(suite.Equal("foo", "bar"))
-	suite.Not(suite.True(false))
+func (s *testSuite) TestNoAssertions() {}
+
+func (s *testSuite) TestTrue() {
+	s.True(true)
+	s.Not(s.True(false))
 }
 
-func (suite *testSuite) TestFalse() {
-	suite.False(false)
-	suite.Not(suite.False(true))
+func (s *testSuite) TestError() {
+	mockSuite := NewMockSuite()
+
+	RunWithFormatter(
+		&mockT{},
+		&SilentFormatter{MethodsPattern: "TestError"},
+		mockSuite,
+	)
+
+	s.True(mockSuite.Ok)
+
+	for _, fn := range mockSuite.TestFuncs {
+		s.Equal(fn.Status, STATUS_FAIL)
+	}
 }
 
-func (suite *testSuite) TestEqual() {
-	suite.Equal("foo", "foo")
+func (mockS *mockSuite) TestError() {
+	mockS.Error("This test should be marked as failed")
 }
 
-func (suite *testSuite) TestNil() {
+func (s *testSuite) TestMust() {
+	mockSuite := NewMockSuite()
+
+	RunWithFormatter(
+		&mockT{},
+		&SilentFormatter{MethodsPattern: "TestMust"},
+		mockSuite,
+	)
+
+	s.True(mockSuite.Ok)
+
+	for _, fn := range mockSuite.TestFuncs {
+		s.Equal(fn.Status, STATUS_FAIL)
+	}
+}
+
+func (mockS *mockSuite) TestMust() {
+	mockS.Ok = true
+	mockS.Must(mockS.Equal(1, 0)) // should exit
+	mockS.Ok = true
+}
+
+func (s *testSuite) TestNot() {
+	s.Not(s.Equal("foo", "bar"))
+	s.Not(s.True(false))
+}
+
+func (s *testSuite) TestFalse() {
+	s.False(false)
+	s.Not(s.False(true))
+}
+
+func (s *testSuite) TestEqual() {
+	s.Equal("foo", "foo")
+}
+
+func (s *testSuite) TestNil() {
 	var v *int = nil
-	suite.Nil(v)
-	suite.Nil(nil)
-	suite.Not(suite.Nil([]byte{1, 2, 3}))
+	s.Nil(v)
+	s.Nil(nil)
+	s.Not(s.Nil([]byte{1, 2, 3}))
 }
 
-func (suite *testSuite) TestPath() {
+func (s *testSuite) TestPath() {
 	ioutil.WriteFile("./testfile", nil, 0600)
-	suite.Path("testfile")
-	suite.Not(suite.Path("foo"))
+	s.Path("testfile")
+	s.Not(s.Path("foo"))
 }
 
-func (suite *testSuite) TestPending() {
-	suite.Pending()
+func (s *testSuite) TestPending() {
+	s.Pending()
 }
 
-func (suite *testSuite) After() {
+func (s *testSuite) After() {
 	os.Remove("testfile")
 }
 
-func (suite *beforeAfterSuite) Before() {
+func (s *beforeAfterSuite) Before() {
 	state += 2
 	beforeState++
 }
 
-func (suite *beforeAfterSuite) After() {
+func (s *beforeAfterSuite) After() {
 	state--
 	afterState--
 }
 
-func (suite *beforeAfterSuite) BeforeAll() {
+func (s *beforeAfterSuite) BeforeAll() {
 	state = 0
 	beforeAllState++
 }
 
-func (suite *beforeAfterSuite) AfterAll() {
+func (s *beforeAfterSuite) AfterAll() {
 	state = 0
 	afterAllState--
 }
 
-func (suite *beforeAfterSuite) TestSetup_1() {
-	suite.Equal(2, state)
+func (s *beforeAfterSuite) TestSetup_1() {
+	s.Equal(2, state)
 }
 
-func (suite *beforeAfterSuite) TestSetup_2() {
-	suite.Equal(3, state)
+func (s *beforeAfterSuite) TestSetup_2() {
+	s.Equal(3, state)
 }
 
 func TestPrettyTest(t *testing.T) {
@@ -145,15 +192,15 @@ func TestPrettyTest(t *testing.T) {
 	}
 }
 
-func (suite *bddFormatterSuite) Should_use_green_on_passing_examples() {
-	suite.True(true)
+func (s *bddFormatterSuite) Should_use_green_on_passing_examples() {
+	s.True(true)
 }
 
-func (suite *bddFormatterSuite) Should_use_yellow_on_pending_examples() {
-	suite.Pending()
+func (s *bddFormatterSuite) Should_use_yellow_on_pending_examples() {
+	s.Pending()
 }
 
-func (suite *bddFormatterSuite) Should_use_yellow_on_examples_with_no_assertions() {}
+func (s *bddFormatterSuite) Should_use_yellow_on_examples_with_no_assertions() {}
 
 func TestBDDStyleSpecs(t *testing.T) {
 	RunWithFormatter(

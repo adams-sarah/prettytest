@@ -176,3 +176,27 @@ func (formatter *BDDFormatter) splitString(text, sep string) (result string) {
 	}
 	return strings.TrimSpace(result)
 }
+
+type SilentFormatter struct {
+	MethodsPattern string
+}
+
+func (formatter *SilentFormatter) PrintSuiteInfo(suite *Suite) {
+	return
+}
+
+func (formatter *SilentFormatter) PrintStatus(testFunc *TestFunc) {
+	return
+}
+
+func (formatter *SilentFormatter) PrintFinalReport(report *FinalReport) {
+	return
+}
+
+func (formatter *SilentFormatter) PrintErrorLog(errorLog []*Error) {
+	return
+}
+
+func (formatter *SilentFormatter) AllowedMethodsPattern() string {
+	return formatter.MethodsPattern
+}

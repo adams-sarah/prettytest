@@ -34,15 +34,3 @@ func (t *testSuite) TestEquality() {
 func (t *testSuite) TestNot() {
 	t.Not(t.Path("foo"))
 }
-
-// Failing tests
-
-func (t *testSuite) TestMustFail() {
-	t.Error("This test must fail.")
-	t.MustFail()
-}
-
-func (t *testSuite) TestInequality() {
-	t.Equal("awesome", "ugly")
-	t.MustFail()
-}

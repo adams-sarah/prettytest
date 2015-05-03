@@ -23,9 +23,9 @@ func (assertion *Assertion) fail() {
 	logError(&Error{assertion.suite, assertion.testFunc, assertion})
 }
 
-// FailFast exits the test if the given assertion is false
-func (s *Suite) FailFast(result *Assertion, messages ...string) *Assertion {
-	assertion := s.setup(fmt.Sprintf("Assertion failed fast"), messages)
+// Must exits the test if the given assertion is false
+func (s *Suite) Must(result *Assertion, messages ...string) *Assertion {
+	assertion := s.setup(fmt.Sprintf("Assertion failed with 'Must'"), messages)
 	if !result.Passed {
 		result.testFunc.Status = STATUS_FAIL
 		assertion.fail()
@@ -113,11 +113,6 @@ func (s *Suite) Error(args ...interface{}) {
 // Pending marks the test function as pending.
 func (s *Suite) Pending() {
 	s.currentTestFunc().Status = STATUS_PENDING
-}
-
-// MustFail marks the current test function as an expected failure.
-func (s *Suite) MustFail() {
-	s.currentTestFunc().mustFail = true
 }
 
 // Failed checks if the test function has failed.
