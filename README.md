@@ -12,7 +12,6 @@ PrettyTest main features are:
   * A simple assertion vocabulary for better readability
   * Customizable formatters through interfaces
   * It's integrated with the go test command
-  * It can use [gocheck](http://labix.org/gocheck) checkers (experimental)
   * It has pretty and colorful output with reports
 
 # Quick start

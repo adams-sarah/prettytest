@@ -2,8 +2,8 @@ package example
 
 import (
 	"testing"
+
 	"github.com/remogatto/prettytest"
-	"launchpad.net/gocheck"
 )
 
 // Start of setup
@@ -20,7 +20,6 @@ func TestRunner(t *testing.T) {
 }
 
 // End of setup
-
 
 // Your tests start here
 
